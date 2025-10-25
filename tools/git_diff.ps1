@@ -2,13 +2,13 @@
 .SYNOPSIS
     Fetches the Git diff between base and head branch.
 .DESCRIPTION
-    Remote-aware: resolves remote/local branches and generates a proper diff.
+    Fully remote-aware: resolves branches locally and remotely, handles ambiguous refs.
 .USAGE
     .\git_diff.ps1 <base-ref> <head-ref>
 .PARAMETER Base
-    The base branch (default: origin/main)
+    Base branch (default: origin/main)
 .PARAMETER Head
-    The head branch (default: HEAD)
+    Head branch (default: HEAD)
 #>
 
 param(
@@ -18,21 +18,21 @@ param(
 
 function Resolve-Branch {
     param([string]$Branch)
-    
-    # Remote branch exists?
-    if (git show-ref --verify --quiet "refs/remotes/origin/$Branch") {
-        $sha = git rev-parse "origin/$Branch"
-        return $sha, $true
+
+    # Check remote first
+    $remoteRef = git show-ref --verify --quiet "refs/remotes/origin/$Branch"
+    if ($LASTEXITCODE -eq 0) { 
+        return "origin/$Branch", $true
     }
-    # Local branch exists?
-    elseif (git show-ref --verify --quiet "refs/heads/$Branch") {
-        $sha = git rev-parse "$Branch"
-        return $sha, $false
+
+    # Then local branch
+    if (git show-ref --verify --quiet "refs/heads/$Branch") {
+        return $Branch, $false
     }
-    else {
-        Write-Warning "Branch '$Branch' not found locally or on remote."
-        return $null, $false
-    }
+
+    # Branch not found
+    Write-Warning "Branch '$Branch' not found locally or on remote."
+    return $null, $false
 }
 
 try {
@@ -47,7 +47,7 @@ try {
         exit 0
     }
 
-    # Fetch only if remote
+    # Fetch from remote if needed
     if ($baseIsRemote) { git fetch origin $Base --quiet }
     if ($headIsRemote) { git fetch origin $Head --quiet }
 
