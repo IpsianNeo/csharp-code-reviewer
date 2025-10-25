@@ -46,8 +46,8 @@ try {
 	}
 
 	
-    if ($baseIsRemote) { git fetch origin $Base --quiet } 
-    if ($headIsRemote) { git fetch origin $Head --quiet }
+    if ($baseIsRemote) { git fetch origin $Base --quiet }
+	if ($headIsRemote) { git fetch origin $Head:$resolvedHead --quiet }
 
     Write-Host "Generating diff between $resolvedBase and $resolvedHead..."
     $diff = git diff --unified=0 --no-pager $resolvedBase $resolvedHead
