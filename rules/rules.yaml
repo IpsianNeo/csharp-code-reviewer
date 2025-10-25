@@ -1,0 +1,9 @@
+rules:
+  - id: async-void
+    description: "Avoid using async void except for event handlers."
+  - id: naming-conventions
+    description: "Methods should follow PascalCase naming."
+  - id: null-check
+    description: "Check for possible null reference exceptions."
+  - id: magic-numbers
+    description: "Avoid magic numbers, use constants."

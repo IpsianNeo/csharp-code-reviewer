@@ -1,0 +1,23 @@
+version: 1.0
+description: >
+  MCP manifest for AI-driven C# code reviewer.
+  Defines PowerShell tools that interact with Git and review artifacts.
+
+tools:
+  git_diff:
+    description: "Generate the diff between base and head branches."
+    command: "powershell"
+    args: "-File tools/git_diff.ps1 {baseRef} {headRef}"
+    output: "text"
+
+  fetch_file:
+    description: "Fetch the full content of a file at a specific commit."
+    command: "powershell"
+    args: "-File tools/fetch_file.ps1 {commitRef} {filePath}"
+    output: "text"
+
+  git_comment:
+    description: "Save AI review output to file or PR comment."
+    command: "powershell"
+    args: "-File tools/git_comment.ps1 {outputPath} \"{content}\""
+    output: "none"

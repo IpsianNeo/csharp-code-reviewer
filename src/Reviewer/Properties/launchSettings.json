@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Reviewer": {
+      "commandName": "Project",
+      "workingDirectory": "$(SolutionDir)"
+    }
+  }
+}
