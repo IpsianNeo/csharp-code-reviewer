@@ -2,7 +2,7 @@
 .SYNOPSIS
     Fetches the Git diff between base and head branch.
 .DESCRIPTION
-    This script is remote-aware: uses remote branches if they exist, otherwise falls back to local branches.
+    Remote-aware: resolves remote/local branches and generates a proper diff.
 .USAGE
     .\git_diff.ps1 <base-ref> <head-ref>
 .PARAMETER Base
@@ -18,18 +18,20 @@ param(
 
 function Resolve-Branch {
     param([string]$Branch)
-    # Check if branch exists on remote
-    $remoteRef = git show-ref --verify --quiet "refs/remotes/origin/$Branch"
-    if ($LASTEXITCODE -eq 0) {
-        return "origin/$Branch", $true
-    } else {
-        # fallback to local
-        if (git show-ref --verify --quiet "refs/heads/$Branch") {
-            return $Branch, $false
-        } else {
-            Write-Warning "Branch '$Branch' not found locally or on remote. Skipping diff."
-			return $null, $false
-        }
+    
+    # Remote branch exists?
+    if (git show-ref --verify --quiet "refs/remotes/origin/$Branch") {
+        $sha = git rev-parse "origin/$Branch"
+        return $sha, $true
+    }
+    # Local branch exists?
+    elseif (git show-ref --verify --quiet "refs/heads/$Branch") {
+        $sha = git rev-parse "$Branch"
+        return $sha, $false
+    }
+    else {
+        Write-Warning "Branch '$Branch' not found locally or on remote."
+        return $null, $false
     }
 }
 
@@ -39,15 +41,15 @@ try {
 
     Write-Host "Resolving head branch '$Head'..."
     $resolvedHead, $headIsRemote = Resolve-Branch $Head
-	
-	if (-not $resolvedHead) {
-		Write-Host "Skipping diff: head branch missing."
-		exit 0
-	}
 
-	
+    if (-not $resolvedBase -or -not $resolvedHead) {
+        Write-Host "Skipping diff: one or both branches missing."
+        exit 0
+    }
+
+    # Fetch only if remote
     if ($baseIsRemote) { git fetch origin $Base --quiet }
-	if ($headIsRemote) { git fetch origin $Head:$resolvedHead --quiet }
+    if ($headIsRemote) { git fetch origin $Head --quiet }
 
     Write-Host "Generating diff between $resolvedBase and $resolvedHead..."
     $diff = git diff --unified=0 --no-pager $resolvedBase $resolvedHead
