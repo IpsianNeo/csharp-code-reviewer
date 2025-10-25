@@ -46,11 +46,11 @@ try {
 	}
 
 	
-    if ($baseIsRemote) { git fetch origin $Base } 
-    if ($headIsRemote) { git fetch origin $Head }
+    if ($baseIsRemote) { git fetch origin $Base --quiet } 
+    if ($headIsRemote) { git fetch origin $Head --quiet }
 
     Write-Host "Generating diff between $resolvedBase and $resolvedHead..."
-    $diff = git diff --unified=0 $resolvedBase $resolvedHead
+    $diff = git diff --unified=0 --no-pager $resolvedBase $resolvedHead
 
     if ([string]::IsNullOrWhiteSpace($diff)) {
         Write-Host "No differences found."
