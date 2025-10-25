@@ -10,6 +10,16 @@ param(
     [string]$Content
 )
 
-Write-Host "Saving review output to $Out..."
-$Content | Out-File -FilePath $Out -Encoding UTF8
-Write-Host "Review saved successfully."
+try {
+    if ([string]::IsNullOrWhiteSpace($Out)) {
+        throw "Output file path not specified."
+    }
+
+    Write-Host "Saving review output to '$Out'..."
+    $Content | Out-File -FilePath $Out -Encoding UTF8 -Force
+    Write-Host "Review saved successfully."
+}
+catch {
+    Write-Error "Error in git_comment.ps1: $_"
+    exit 1
+}

@@ -20,7 +20,7 @@ class Program
 
             string targetBranch = Environment.GetEnvironmentVariable("GITHUB_BASE_REF")
                                   ?? Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH")
-                                  ?? "main"; // fallback if running locally
+                                  ?? "master"; // fallback if running locally
 
             Console.WriteLine($"🚀 Running review: '{sourceBranch}' -> '{targetBranch}'");
 
